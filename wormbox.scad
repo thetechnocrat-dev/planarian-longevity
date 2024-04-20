@@ -9,11 +9,16 @@ vent_slit_width = 2; // Width of ventilation slits
 vent_slit_height = 5; // Height of ventilation slits
 vent_slit_spacing = 10; // Spacing between ventilation slits
 vent_slit_offset = 5; // Offset from the top of the box for the ventilation slits
-clearance = 0.2; // Increased clearance to avoid rendering glitches
-lens_hole_diameter = 10; // Diameter of the camera lens hole
-pi_width = 56 + 4; // Width of Raspberry Pi plus clearance
-pi_depth = 17 + 4; // Depth of Raspberry Pi plus clearance
-pi_height = 85 + 2; // Height of Raspberry Pi plus clearance
+lens_hole_diameter = 12; // Diameter of the camera lens hole
+lens_extension_height = 15; // Height of the lens extension above the cover
+lens_outer_diameter = lens_hole_diameter + 2 * 1; // Outer diameter of the lens (adding 1mm thickness on all sides)
+lens_inner_diameter = lens_hole_diameter; // Inner diameter remains as the lens hole diameter
+led_hole_diameter = 5; // Diameter of the LED hole
+lens_wall_thickness = 2; // Thickness of the lens wall
+led_hole_spacing = 30; // Spacing from the center of the camera hole to the center of the LED hole
+pi_width = 56 + 10; // Width of Raspberry Pi
+pi_depth = 17 + 10; // Depth of Raspberry Pi
+pi_height = 85 + 2; // Height of Raspberry Pi
 holder_thickness = 3; // Thickness of the Raspberry Pi holder walls
 
 // Option to toggle parts for printing
@@ -27,17 +32,17 @@ module bottom() {
 
 pi = 3.14159;
 
-max_angle = atan((box_height - pi_height) / pi_depth) * 180 / pi; // Max angle to meet the cover opening
+max_angle = atan((box_height - pi_height) / pi_depth); // Max angle to meet the cover opening
 
 // Raspberry Pi holster with parametric angle
 module pi_holster() {
     translate([-pi_depth, (box_depth - pi_width) / 2, box_height - pi_height]) {
         // Back wall of the holster
         cube([holder_thickness, pi_width, pi_height]);
-        // Parametric angled bottom support plane
+        // Parametric angled bottom support plane, use radians directly
         translate([0, 0, 0])
-            rotate([0, max_angle, 0])
-                cube([pi_depth / cos(max_angle * pi / 180), pi_width, holder_thickness]); // Adjusted length for the bottom holster
+            rotate([0, max_angle, 0])  // Convert to degrees only for rotate function
+                cube([pi_depth / cos(max_angle), pi_width, holder_thickness]);
         // Side support bars
         translate([0, 0, pi_height - holder_thickness])
             cube([pi_depth, holder_thickness, holder_thickness]); // Rear upper bar
@@ -49,36 +54,57 @@ module pi_holster() {
 // Ventilation slits near the top of the sides
 module ventilation_slits() {
     for(x = [overlap + vent_slit_spacing : vent_slit_spacing : box_width + overlap - vent_slit_spacing]) {
-        translate([x, -clearance, box_height - vent_slit_offset - vent_slit_height]) {
-            cube([vent_slit_width, wall_thickness + 2 * clearance, vent_slit_height + clearance]);
+        translate([x, 0, box_height - vent_slit_offset - vent_slit_height]) {
+            cube([vent_slit_width, wall_thickness, vent_slit_height]);
         }
-        translate([x, box_depth + wall_thickness - clearance, box_height - vent_slit_offset - vent_slit_height]) {
-            cube([vent_slit_width, wall_thickness + 2 * clearance, vent_slit_height + clearance]);
+    }
+    for(x = [overlap + vent_slit_spacing : vent_slit_spacing : box_width + overlap - vent_slit_spacing]) {
+        translate([x, box_width, box_height - vent_slit_offset - vent_slit_height]) {
+            cube([vent_slit_width, wall_thickness, vent_slit_height]);
         }
     }
 }
 
-// Cover with side ventilation slits, camera lens hole, and Raspberry Pi holster
+
+// Camera lens module
+module camera_lens() {
+    translate([box_width/2 + overlap, box_depth/2 + overlap, box_height - wall_thickness - lens_extension_height])
+        difference() {         
+            cylinder(h = lens_extension_height, r = (lens_hole_diameter/2) + lens_wall_thickness, $fn = 50);
+            cylinder(h = lens_extension_height, r = (lens_hole_diameter/2), $fn = 50);
+        }
+}
+
+
+// Cover with side ventilation slits, camera lens, camera hole, Raspberry Pi holster, and LED holes
 module cover() {
-    translate([0, 0, clearance]) { // Adjust for optimal print orientation
+    translate([0, 0, 0]) { // Adjust for optimal print orientation 
         difference() {
             // The outer shape of the cover
             cube([box_width + 2 * overlap, box_depth + 2 * overlap, box_height]);
 
-            // Subtracting the inner part to create hollow space and walls, with clearance
+            // Subtracting the inner part to create hollow space and walls
             translate([overlap, overlap, 0])
-                cube([box_width, box_depth, box_height - wall_thickness + clearance]);
+                cube([box_width, box_depth, box_height - wall_thickness]);
 
-            // Subtract ventilation slits from the cover sides, with clearance
+            // Subtracting camera hole through the cover and the lens
+            translate([box_width/2 + overlap, box_depth/2 + overlap, box_height - wall_thickness - lens_extension_height])
+                cylinder(h = wall_thickness + lens_extension_height, r = lens_hole_diameter/2, $fn = 50);
+
+            // Subtract ventilation slits from the cover sides
             ventilation_slits();
 
-            // Camera lens hole on the top
-            translate([box_width/2 + overlap, box_depth/2 + overlap, box_height - wall_thickness])
-                cylinder(h = wall_thickness, r = lens_hole_diameter/2, $fn = 50);
+            // LED holes on the top, positioned along the y-axis
+            translate([box_width/2 + overlap, box_depth/2 + overlap - led_hole_spacing, box_height - wall_thickness])
+                cylinder(h = wall_thickness, r = led_hole_diameter/2, $fn = 50);
+            translate([box_width/2 + overlap, box_depth/2 + overlap + led_hole_spacing, box_height - wall_thickness])
+                cylinder(h = wall_thickness, r = led_hole_diameter/2, $fn = 50);
         }
+        camera_lens();
     }
     pi_holster();
 }
+
 
 // Assembly
 if (print_bottom) bottom();
