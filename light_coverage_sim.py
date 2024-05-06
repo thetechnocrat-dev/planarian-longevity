@@ -54,7 +54,7 @@ ax.set_ylim(-5, 100)
 ax.set_aspect('equal', 'box')
 ax.set_xlabel('mm')
 ax.set_ylabel('mm')
-ax.set_title('Enhanced Side View of Beam Paths and Petri Dish')
+ax.set_title('Side View of Light Beam Paths on Petri Dish')
 ax.legend()
 
 # Show the plot
