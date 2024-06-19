@@ -1,0 +1,13 @@
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 1
+names: ['flatworms-Cg7o']
+
+roboflow:
+  workspace: happy-hamster
+  project: planarian-flatworm-detection
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/happy-hamster/planarian-flatworm-detection/dataset/1

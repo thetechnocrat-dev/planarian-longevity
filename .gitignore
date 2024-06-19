@@ -1,0 +1,5 @@
+# ignore model data and weights
+/vision/runs/*
+/vision/yolov8n.pt
+/vision/datasets/*
+!/vision/datasets/README.md
