@@ -4,11 +4,11 @@ import matplotlib.patches as patches
 
 # Constants
 radius_petri_dish = 50  # mm
-distance_from_center = 80  # mm, for both lights
+distance_from_center = 70  # mm, for both lights
 beam_angle_degrees = 44  # Total viewing angle of the LED
 angle_of_incidence_degrees = 45  # Angle of the LED relative to the vertical
 half_viewing_angle = beam_angle_degrees / 2  # Half of the total viewing angle
-height_of_led = 60  # mm, height of the LED from the level of the Petri dish
+height_of_led = 70  # mm, height of the LED from the level of the Petri dish
 
 # Adjusted function to ensure beams point towards the petri dish and stop at dish level, with direction consideration
 def adjusted_side_view_beam_paths(x_offset, angle_of_incidence, half_view_angle, height, direction):
@@ -31,8 +31,12 @@ right_endpoints = adjusted_side_view_beam_paths(distance_from_center, angle_of_i
 # Recreate figure and axis for the corrected side view
 fig, ax = plt.subplots()
 
-# Petri dish as a horizontal line
+# Petri dish bottom as a horizontal line
 ax.hlines(y=0, xmin=-radius_petri_dish, xmax=radius_petri_dish, colors='grey', linewidths=3, label='Petri Dish')
+
+# Petri dish sides as vertical lines
+ax.vlines(x=radius_petri_dish, ymin=0, ymax=15, colors='grey', linewidths=3)
+ax.vlines(x=-radius_petri_dish, ymin=0, ymax=15, colors='grey', linewidths=3)
 
 # Plot the beams as lines from each LED position correctly
 for i, (x, y) in enumerate(left_endpoints):
