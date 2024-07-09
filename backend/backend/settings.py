@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-c*obydcjslk%mv&oq&dk(-!(901)4lvom^ae!!n@!$lm+3*v+l
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['api.openzyme.bio', 'localhost', '127.0.0.1']
 
 
 # Application definition
