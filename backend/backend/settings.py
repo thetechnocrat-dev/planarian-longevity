@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-c*obydcjslk%mv&oq&dk(-!(901)4lvom^ae!!n@!$lm+3*v+l'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', '1') == '1'
 
 ALLOWED_HOSTS = ['api.openzyme.bio', 'localhost', '127.0.0.1']
 
