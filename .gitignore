@@ -3,3 +3,8 @@
 /vision/yolov8n.pt
 /vision/datasets/*
 !/vision/datasets/README.md
+
+# python specific
+__pycache__/
+*.pyc
+
