@@ -1,26 +1,43 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Navbar from './Navbar';
+import SignupForm from './SignupForm';
+import LoginForm from './LoginForm';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
 
-function App() {
+const App: React.FC = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
+  }, []);
+
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setIsLoggedIn(false);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div>
+        <Navbar isLoggedIn={isLoggedIn} onLogout={handleLogout} />
+        <Container>
+          <Routes>
+            <Route path="/" element={<Typography variant="h4" component="h1" gutterBottom>Welcome to Openzyme</Typography>} />
+            <Route path="/signup" element={<SignupForm onLogin={handleLogin} />} />
+            <Route path="/login" element={<LoginForm onLogin={handleLogin} />} />
+          </Routes>
+        </Container>
+      </div>
+    </Router>
   );
-}
+};
 
 export default App;
