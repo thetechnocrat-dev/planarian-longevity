@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Button, TextField, Typography } from '@mui/material';
 import api from './axiosConfig';
-import axios, { AxiosError } from 'axios'; // Import AxiosError for type checking
+import { AxiosError } from 'axios';  // Import AxiosError for type checking
 
 const DeviceClaimForm: React.FC = () => {
   const [registerId, setRegisterId] = useState('');
@@ -14,12 +14,12 @@ const DeviceClaimForm: React.FC = () => {
     setSuccess('');
 
     try {
-      const response = await api.post('/devices/claim/', { register_id: registerId });
+      await api.post('/devices/claim/', { register_id: registerId });  // Removed 'response' since it's not used
       setSuccess('Device claimed successfully!');
       setRegisterId('');
-    } catch (error: unknown) { // Explicitly marking error as unknown
-      if (axios.isAxiosError(error)) { // Type guard to check if this is an AxiosError
-        console.error('Error claiming device:', error.response?.data.error); // Safely accessing the data
+    } catch (error: unknown) {  // Type annotation for error
+      if (error instanceof AxiosError) {  // Type guard for Axios errors
+        console.error('Error claiming device:', error.response?.data.error);
         setError('Failed to claim device. Please try again.');
       } else {
         console.error('An unexpected error occurred:', error);
