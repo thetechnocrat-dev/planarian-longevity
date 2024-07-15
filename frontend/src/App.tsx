@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './Navbar';
 import SignupForm from './SignupForm';
 import LoginForm from './LoginForm';
+import DeviceClaimForm from './DeviceClaimForm';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 
@@ -33,6 +34,7 @@ const App: React.FC = () => {
             <Route path="/" element={<Typography variant="h4" component="h1" gutterBottom>Welcome to Openzyme</Typography>} />
             <Route path="/signup" element={<SignupForm onLogin={handleLogin} />} />
             <Route path="/login" element={<LoginForm onLogin={handleLogin} />} />
+            <Route path="/claim" element={<DeviceClaimForm />} />  {/* Add this line */}
           </Routes>
         </Container>
       </div>
