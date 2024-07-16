@@ -5,14 +5,15 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
+import { User } from '../types';
 import { useTheme, useMediaQuery } from '@mui/material';
 
 interface NavbarProps {
-  isLoggedIn: boolean;
+  user: User | null;
   onLogout: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ isLoggedIn, onLogout }) => {
+const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn, onLogout }) => {
           Openzyme
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          {isLoggedIn ? (
+          {user ? (
             <Button color="inherit" onClick={onLogout}>Logout</Button>
           ) : (
             <>

@@ -16,6 +16,11 @@ class SignUpView(CreateAPIView):
         response = super().create(request, *args, **kwargs)
         user = CustomUser.objects.get(email=response.data['email'])
         refresh = RefreshToken.for_user(user)
+        response.data['user'] = {
+            'id': user.id,
+            'email': user.email,
+            'username': user.username
+        }
         response.data['token'] = str(refresh.access_token)
         return response
 

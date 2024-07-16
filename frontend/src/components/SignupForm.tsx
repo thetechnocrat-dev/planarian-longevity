@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, TextField, Typography } from '@mui/material';
-import api from './axiosConfig';
+import { saveUserInfo } from '../utils/auth';
+import { User } from '../types';
+import api from '../api/axiosConfig';
 
 interface SignupFormProps {
-  onLogin: () => void;
+  onLogin: (user: User) => void;
 }
 
 const SignupForm: React.FC<SignupFormProps> = ({ onLogin }) => {
@@ -25,14 +27,9 @@ const SignupForm: React.FC<SignupFormProps> = ({ onLogin }) => {
         password,
       });
 
-      // Save the user's token in local storage
-      localStorage.setItem('token', response.data.token);
-      // Optionally, save user info in local storage
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-
-      // Update login state and redirect
-      onLogin();
-      navigate('/');
+      saveUserInfo(response.data.token, response.data.user);
+      onLogin(response.data.user);
+      navigate('/claim');
     } catch (error) {
       console.error('Error signing up:', error);
       setError('Failed to sign up. Please try again.');
@@ -79,6 +76,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onLogin }) => {
       <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
         Sign Up
       </Button>
+      <p>Already have an account? <a href="/login" style={{ cursor: 'pointer' }}>Log in</a></p>
     </Box>
   );
 };
