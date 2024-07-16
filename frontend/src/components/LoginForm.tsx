@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, TextField, Typography } from '@mui/material';
-import api from './axiosConfig';
+import { saveUserInfo } from '../utils/auth';
+import { User } from '../types';
+import api from '../api/axiosConfig';
 
 interface LoginFormProps {
-  onLogin: () => void;
+  onLogin: (user: User) => void;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
@@ -23,13 +25,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
         password,
       });
 
-      // Save the user's token in local storage
-      localStorage.setItem('token', response.data.token);
-      // Optionally, save user info in local storage
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-
-      // Update login state and redirect
-      onLogin();
+      saveUserInfo(response.data.token, response.data.user);
+      onLogin(response.data.user);
       navigate('/');
     } catch (error) {
       console.error('Error logging in:', error);

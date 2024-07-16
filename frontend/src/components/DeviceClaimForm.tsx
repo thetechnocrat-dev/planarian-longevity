@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, Button, TextField, Typography } from '@mui/material';
-import api from './axiosConfig';
+import api from '../api/axiosConfig';
 import { AxiosError } from 'axios';  // Import AxiosError for type checking
 
 const DeviceClaimForm: React.FC = () => {
   const [registerId, setRegisterId] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -14,9 +16,10 @@ const DeviceClaimForm: React.FC = () => {
     setSuccess('');
 
     try {
-      await api.post('/devices/claim/', { register_id: registerId });  // Removed 'response' since it's not used
+      await api.post('/devices/claim/', { register_id: registerId });
       setSuccess('Device claimed successfully!');
       setRegisterId('');
+      navigate('/devices');
     } catch (error: unknown) {  // Type annotation for error
       if (error instanceof AxiosError) {  // Type guard for Axios errors
         console.error('Error claiming device:', error.response?.data.error);
