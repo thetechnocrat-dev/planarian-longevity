@@ -1,6 +1,7 @@
 #!/bin/bash
 
-source .env
+# source ./.env
+source /etc/heartbeat/.env
 
 HEARTBEAT_URL="${SERVER_URL}/devices/${DEVICE_REGISTER_ID}/heartbeat/"
 
