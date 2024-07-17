@@ -1,4 +1,7 @@
+import datetime
 from django.utils import timezone
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 from rest_framework import status, generics, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
@@ -6,7 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.views import APIView
 from .serializers import DeviceClaimSerializer, DeviceSerializer
-from .models import Device
+from .models import Device, Measurement
 
 
 @api_view(['POST'])
@@ -48,7 +51,7 @@ class DeviceDetailView(RetrieveAPIView):
     lookup_field = 'register_id'
 
 class HeartbeatView(APIView):
-    permission_classes = [permissions.AllowAny]  # Adjust permissions as necessary
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request, register_id, format=None):
         secret = request.data.get('secret')
@@ -57,5 +60,31 @@ class HeartbeatView(APIView):
             device.last_heartbeat = timezone.now()
             device.save()
             return Response({'status': 'success'}, status=status.HTTP_200_OK)
+        except Device.DoesNotExist:
+            return Response({'error': 'Invalid device or secret'}, status=status.HTTP_400_BAD_REQUEST)
+
+class MeasurementUploadView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request, register_id):
+        secret = request.data.get('secret')
+        file = request.data.get('file')
+        recorded_at = request.data.get('recorded_at')
+        sensor = request.data.get('sensor')
+
+        try:
+            device = Device.objects.get(register_id=register_id, secret=secret)
+
+            # Assuming filename is formatted as YYYYMMDD_HHMMSS_sensor.ext
+            path = default_storage.save(f'{device.uuid}/{sensor}/{str(file)}', ContentFile(file.read()))
+
+            measurement = Measurement.objects.create(
+                device=device,
+                sensor=sensor,
+                value=path,
+                recorded_at=datetime.datetime.strptime(recorded_at, '%Y-%m-%dT%H:%M:%SZ'),
+                uploaded_at=datetime.datetime.now()
+            )
+            return Response({'status': 'success', 'path': path}, status=status.HTTP_201_CREATED)
         except Device.DoesNotExist:
             return Response({'error': 'Invalid device or secret'}, status=status.HTTP_400_BAD_REQUEST)
