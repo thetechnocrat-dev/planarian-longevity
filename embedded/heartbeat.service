@@ -1,0 +1,12 @@
+[Unit]
+Description=Device Heartbeat Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/path/to/heartbeat.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

@@ -1,8 +1,10 @@
+from django.utils import timezone
 from rest_framework import status, generics, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import RetrieveAPIView
+from rest_framework.views import APIView
 from .serializers import DeviceClaimSerializer, DeviceSerializer
 from .models import Device
 
@@ -43,4 +45,17 @@ class DeviceDetailView(RetrieveAPIView):
     queryset = Device.objects.all()
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = DeviceSerializer
-    lookup_field = 'register_id' 
+    lookup_field = 'register_id'
+
+class HeartbeatView(APIView):
+    permission_classes = [permissions.AllowAny]  # Adjust permissions as necessary
+
+    def post(self, request, register_id, format=None):
+        secret = request.data.get('secret')
+        try:
+            device = Device.objects.get(register_id=register_id, secret=secret)
+            device.last_heartbeat = timezone.now()
+            device.save()
+            return Response({'status': 'success'}, status=status.HTTP_200_OK)
+        except Device.DoesNotExist:
+            return Response({'error': 'Invalid device or secret'}, status=status.HTTP_400_BAD_REQUEST)
