@@ -1,0 +1,13 @@
+[Unit]
+Description=Record Videos
+After=network.target
+
+[Service]
+User=openzyme
+Group=openzyme
+ExecStart=/home/openzyme/scripts/record_videos.sh
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

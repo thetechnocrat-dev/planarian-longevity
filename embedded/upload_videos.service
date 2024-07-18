@@ -1,0 +1,14 @@
+[Unit]
+Description=Upload Videos
+After=network.target
+
+[Service]
+User=openzyme
+Group=openzyme
+EnvironmentFile=/home/openzyme/.env
+ExecStart=/home/openzyme/scripts/upload_videos.sh
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
