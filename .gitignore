@@ -4,6 +4,10 @@
 /vision/datasets/*
 !/vision/datasets/README.md
 
+# ignore logs
+*.log
+/logs/*
+
 # python specific
 __pycache__/
 *.pyc

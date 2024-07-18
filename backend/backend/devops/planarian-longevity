@@ -1,0 +1,15 @@
+/var/log/planarian-longevity/django_errors.log /var/log/gunicorn_access.log /var/log/gunicorn_error.log {
+    rotate 7
+    daily
+    missingok
+    notifempty
+    compress
+    delaycompress
+    create 640 ubuntu www-data
+    sharedscripts
+    postrotate
+        if [ -f /var/run/gunicorn.pid ]; then
+            kill -USR1 `cat /var/run/gunicorn.pid`
+        fi
+    endscript
+}
