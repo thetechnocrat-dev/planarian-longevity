@@ -1,0 +1,18 @@
+[Unit]
+Description=gunicorn daemon for Django
+After=network.target
+
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/planarian-longevity/backend
+ExecStart=/home/ubuntu/.pyenv/versions/3.11.9/envs/prod_3_11/bin/gunicorn \
+          --workers 3 \
+          --bind unix:/home/ubuntu/planarian-longevity/backend/backend.sock \
+          --access-logfile /var/log/gunicorn_access.log \
+          --error-logfile /var/log/gunicorn_error.log \
+          --log-level debug \
+          backend.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
