@@ -12,3 +12,9 @@ export interface Device {
     owner_username: string;
     registered: boolean;
 }
+
+export interface Measurement {
+    value: string;
+    recorded_at: string;
+    uploaded_at: string;
+}

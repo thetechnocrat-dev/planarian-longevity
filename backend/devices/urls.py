@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import claim_device, DeviceListView, DeviceDetailView, HeartbeatView, MeasurementUploadView
+from .views import claim_device, DeviceListView, DeviceDetailView, HeartbeatView, MeasurementUploadView, MeasurementListView
 
 urlpatterns = [
     path('claim/', claim_device, name='claim_device'),
@@ -7,4 +7,5 @@ urlpatterns = [
     path('<str:register_id>/', DeviceDetailView.as_view(), name='device-detail'),
     path('<str:register_id>/heartbeat/', HeartbeatView.as_view(), name='device-heartbeat'),
     path('<str:register_id>/upload/', MeasurementUploadView.as_view(), name='measurement-upload'),
+    path('<str:register_id>/measurements/', MeasurementListView.as_view(), name='measurement-list'),
 ]

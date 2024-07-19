@@ -1,5 +1,6 @@
 import datetime
 from django.utils import timezone
+from django.shortcuts import get_object_or_404
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from rest_framework import status, generics, permissions
@@ -7,8 +8,9 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import RetrieveAPIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
-from .serializers import DeviceClaimSerializer, DeviceSerializer
+from .serializers import DeviceClaimSerializer, DeviceSerializer, MeasurementSerializer, MeasurementPagination
 from .models import Device, Measurement
 
 
@@ -88,3 +90,12 @@ class MeasurementUploadView(APIView):
             return Response({'status': 'success', 'path': path}, status=status.HTTP_201_CREATED)
         except Device.DoesNotExist:
             return Response({'error': 'Invalid device or secret'}, status=status.HTTP_400_BAD_REQUEST)
+
+class MeasurementListView(generics.ListAPIView):
+    serializer_class = MeasurementSerializer
+    pagination_class = MeasurementPagination
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        register_id = self.kwargs['register_id']
+        return Measurement.objects.filter(device__register_id=register_id).order_by('-recorded_at')
