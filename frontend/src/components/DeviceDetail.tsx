@@ -22,7 +22,7 @@ const DeviceDetail: React.FC = () => {
 
             fetchMeasurements(register_id, 1, rowsPerPage);
         }
-    }, [register_id]);
+    }, [register_id, rowsPerPage]);
 
     const fetchMeasurements = (register_id: string, page: number, rowsPerPage: number) => {
         fetchDeviceMeasurements(register_id, page)
