@@ -15,6 +15,7 @@ export interface Device {
 
 export interface Measurement {
     value: string;
+    inference_value: string;
     recorded_at: string;
     uploaded_at: string;
 }

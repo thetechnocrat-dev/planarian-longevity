@@ -8,7 +8,7 @@ BACKOFF=5
 LOG_FILE="/home/openzyme/upload_videos.log"
 
 while true; do
-    for file in "$VIDEO_PATH"/*.h264; do
+    for file in "$VIDEO_PATH"/*.mp4; do
         if [ -f "$file" ]; then
             recorded_at=$(basename "$file" | cut -d'_' -f1)_$(basename "$file" | cut -d'_' -f2 | cut -d'.' -f1)Z
             recorded_at_formatted=$(date -d "${recorded_at:0:8} ${recorded_at:9:4}" "+%Y-%m-%dT%H:%M:%SZ")
@@ -21,7 +21,7 @@ while true; do
                 -F "recorded_at=$recorded_at_formatted" \
                 -F "sensor=camera")
 
-            if [ "$response" -eq 200 ]; then
+            if [ "$response" -eq 200 ] || [ "$response" -eq 201 ]; then
                 echo "$(date '+%Y-%m-%d %H:%M:%S') - Upload successful: $file" >> "$LOG_FILE"
                 rm "$file"
                 BACKOFF=5

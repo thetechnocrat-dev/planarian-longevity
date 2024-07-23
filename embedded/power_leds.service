@@ -1,0 +1,14 @@
+[Unit]
+Description=Power LEDs on Boot
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /home/openzyme/scripts/power_leds.py
+User=openzyme
+WorkingDirectory=/home/openzyme/scripts
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

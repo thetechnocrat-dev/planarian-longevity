@@ -11,7 +11,3 @@ export const fetchDevices = () => {
 export const fetchDeviceMeasurements = (register_id: string, page = 1) => {
     return api.get(`/devices/${register_id}/measurements/?page=${page}`)
 };
-
-export const getPresignedUrl = (filename: string) => {
-    return api.get(`/users/get-presigned-url/${filename}/`);
-};

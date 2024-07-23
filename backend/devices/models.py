@@ -33,6 +33,7 @@ class Measurement(models.Model):
     device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='datapoints', db_index=True)
     sensor = models.CharField(max_length=10, choices=SENSOR_TYPES)
     value = models.TextField()
+    inference_value = models.TextField(blank=True, null=True)  # Add this line
     recorded_at = models.DateTimeField(db_index=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 

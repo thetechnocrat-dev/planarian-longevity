@@ -86,6 +86,11 @@ const DeviceDetail: React.FC = () => {
                                             {extractFilename(measurement.value)}
                                         </Button>
                                     </TableCell>
+                                    <TableCell>
+                                        <Button onClick={() => handleDownload(measurement.inference_value)}>
+                                            {extractFilename(measurement.inference_value)}
+                                        </Button>
+                                    </TableCell>
                                     <TableCell>{new Date(measurement.recorded_at).toLocaleString()}</TableCell>
                                     <TableCell>{new Date(measurement.uploaded_at).toLocaleString()}</TableCell>
                                 </TableRow>
