@@ -43,4 +43,4 @@ class MeasurementPagination(PageNumberPagination):
 class MeasurementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Measurement
-        fields = ['value', 'recorded_at', 'uploaded_at']
+        fields = ['value', 'recorded_at', 'uploaded_at', 'inference_value']

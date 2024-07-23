@@ -6,6 +6,18 @@ From OS bookworm
 
 ```
 vi /home/openzyme/.env
+sudo vi /etc/NetworkManager/system-connections/accesspoint.nmconnection
+sudo vi /etc/NetworkManager/NetworkManager.conf
+sudo chmod 600 /etc/NetworkManager/system-connections/accesspoint.nmconnection
+sudo cp planarian-longevity/embedded/webapp ./webapp
+sudo vi /etc/systemd/system/webapp.service
+sudo systemctl enable webapp.service
+sudo systemctl start webapp.service
+vi /home/openzyme/scripts/power_leds.py
+chmod +x /home/openzyme/scripts/power_leds.py
+sudo vi /etc/systemd/system/power_leds.service
+sudo systemctl enable power_leds.service
+sudo systemctl start power_leds.service
 sudo mkdir /opt/heartbeat
 sudo mkdir /etc/heartbeat
 sudo vi /opt/heartbeat/heartbeat.sh 

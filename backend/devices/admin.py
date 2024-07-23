@@ -8,7 +8,7 @@ class DeviceAdmin(admin.ModelAdmin):
     search_fields = ('register_id', 'device_type', 'device_version', 'owner__username')
 
 class MeasurementAdmin(admin.ModelAdmin):
-    list_display = ('device', 'sensor', 'recorded_at', 'uploaded_at', 'value')
+    list_display = ('device', 'sensor', 'recorded_at', 'uploaded_at', 'value', 'inference_value')
     list_filter = ('sensor', 'recorded_at')
     search_fields = ('device__register_id', 'value')
 
