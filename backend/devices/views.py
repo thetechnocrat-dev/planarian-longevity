@@ -8,9 +8,9 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import RetrieveAPIView
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
-from .serializers import DeviceClaimSerializer, DeviceSerializer, MeasurementSerializer, MeasurementPagination
+from rest_framework.pagination import PageNumberPagination
+from .serializers import DeviceClaimSerializer, DeviceSerializer, MeasurementSerializer
 from .models import Device, Measurement
 
 
@@ -90,6 +90,9 @@ class MeasurementUploadView(APIView):
             return Response({'status': 'success', 'path': path}, status=status.HTTP_201_CREATED)
         except Device.DoesNotExist:
             return Response({'error': 'Invalid device or secret'}, status=status.HTTP_400_BAD_REQUEST)
+
+class MeasurementPagination(PageNumberPagination):
+    page_size = 10
 
 class MeasurementListView(generics.ListAPIView):
     serializer_class = MeasurementSerializer

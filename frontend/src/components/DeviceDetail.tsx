@@ -73,7 +73,8 @@ const DeviceDetail: React.FC = () => {
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell>Value</TableCell>
+                                <TableCell>Video</TableCell>
+                                <TableCell>Tracked Video</TableCell>
                                 <TableCell>Recorded At</TableCell>
                                 <TableCell>Uploaded At</TableCell>
                             </TableRow>
@@ -87,9 +88,13 @@ const DeviceDetail: React.FC = () => {
                                         </Button>
                                     </TableCell>
                                     <TableCell>
-                                        <Button onClick={() => handleDownload(measurement.inference_value)}>
-                                            {extractFilename(measurement.inference_value)}
-                                        </Button>
+                                        {measurement.inference_value ? (
+                                            <Button onClick={() => handleDownload(measurement.inference_value)}>
+                                                {extractFilename(measurement.inference_value)}
+                                            </Button>
+                                        ) : (
+                                            <span>Null</span>
+                                        )}
                                     </TableCell>
                                     <TableCell>{new Date(measurement.recorded_at).toLocaleString()}</TableCell>
                                     <TableCell>{new Date(measurement.uploaded_at).toLocaleString()}</TableCell>

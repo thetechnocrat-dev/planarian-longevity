@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from rest_framework.pagination import PageNumberPagination
 from django.contrib.auth import get_user_model
 from .models import Device, Measurement
 
@@ -34,11 +33,6 @@ class DeviceSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         instance.save()
         return instance
-
-class MeasurementPagination(PageNumberPagination):
-    page_size = 10
-    page_size_query_param = 'page_size'
-    max_page_size = 100
 
 class MeasurementSerializer(serializers.ModelSerializer):
     class Meta:
