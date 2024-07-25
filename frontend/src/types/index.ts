@@ -19,3 +19,10 @@ export interface Measurement {
     recorded_at: string;
     uploaded_at: string;
 }
+
+export interface Message {
+    username: string;
+    device_type: string;
+    created_at: string;
+    content: string;
+}

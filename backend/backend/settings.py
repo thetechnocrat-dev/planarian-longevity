@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'storages',
     'users',
     'devices',
+    'messaging',
 ]
 
 REST_FRAMEWORK = {
