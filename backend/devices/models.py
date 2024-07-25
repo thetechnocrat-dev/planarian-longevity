@@ -1,12 +1,9 @@
 from django.db import models
 from django.conf import settings
+from .choices import DEVICE_TYPES
 import uuid
 
 class Device(models.Model):
-    DEVICE_TYPES = (
-        ('flatworm_watcher', 'Flatworm Watcher'),
-    )
-
     DEVICE_VERSIONS = (
         ('flatworm_watcher_v1', 'Flatworm Watcher Version 1'),
     )

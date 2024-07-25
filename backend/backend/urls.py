@@ -5,4 +5,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
     path('devices/', include('devices.urls')),
+    path('messaging/', include('messaging.urls')),
 ]
