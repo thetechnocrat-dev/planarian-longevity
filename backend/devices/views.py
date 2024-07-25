@@ -1,15 +1,19 @@
 import datetime
+import boto3
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+from django.conf import settings
+from django.db.models import Q
 from rest_framework import status, generics, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
+from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 from .serializers import DeviceClaimSerializer, DeviceSerializer, MeasurementSerializer
 from .models import Device, Measurement
 
@@ -102,3 +106,73 @@ class MeasurementListView(generics.ListAPIView):
     def get_queryset(self):
         register_id = self.kwargs['register_id']
         return Measurement.objects.filter(device__register_id=register_id).order_by('-recorded_at')
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_unprocessed_measurement(request):
+    print("Received request with headers:", request.headers)
+    print("Received request with GET params:", request.GET)
+
+    worker_secret = request.GET.get('worker_secret')
+    recorded_after = request.GET.get('recorded_after')
+    
+    print("Worker secret:", worker_secret)
+    print("Recorded after:", recorded_after)
+
+    if worker_secret != settings.WORKER_SECRET:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        recorded_after_date = timezone.make_aware(timezone.datetime.fromisoformat(recorded_after))
+    except ValueError:
+        return Response({'error': 'Invalid date format'}, status=status.HTTP_400_BAD_REQUEST)
+
+    measurement = Measurement.objects.filter(
+        recorded_at__gt=recorded_after_date
+    ).filter(
+        Q(inference_value__isnull=True) | Q(inference_value='')
+    ).order_by('-recorded_at').first()
+    
+    if not measurement:
+        return Response({'message': 'No measurements found'}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = MeasurementSerializer(measurement)
+
+    s3_client = boto3.client(
+        's3',
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        region_name=settings.AWS_S3_REGION_NAME
+    )
+
+    data = serializer.data
+    filename = data['value']
+    try:
+        presigned_url = s3_client.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': filename},
+            ExpiresIn=3600
+        )
+        data['presigned_url'] = presigned_url
+    except (NoCredentialsError, PartialCredentialsError) as e:
+        data['presigned_url'] = None
+
+    return Response(data)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def update_inference_value(request):
+    worker_secret = request.data.get('worker_secret')
+    measurement_id = request.data.get('id')
+    inference_value = request.data.get('inference_value')
+
+    if worker_secret != settings.WORKER_SECRET:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        measurement = Measurement.objects.get(id=measurement_id)
+        measurement.inference_value = inference_value
+        measurement.save()
+        return Response({'message': 'Inference value updated successfully'}, status=status.HTTP_200_OK)
+    except Measurement.DoesNotExist:
+        return Response({'error': 'Measurement not found'}, status=status.HTTP_404_NOT_FOUND)
