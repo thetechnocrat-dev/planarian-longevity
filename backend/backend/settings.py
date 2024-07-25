@@ -10,8 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
+import urllib.parse
 from dotenv import load_dotenv
 from pathlib import Path
+from kombu import Exchange, Queue
 
 load_dotenv()
 
@@ -130,11 +132,37 @@ DATABASES = {
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
-AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'us-east-1')
+AWS_REGION_NAME = os.getenv('AWS_REGION_NAME', 'us-east-1')
 AWS_S3_FILE_OVERWRITE = False
 AWS_DEFAULT_ACL = None  # This will inherit the bucket's ACL settings
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+encoded_secret = urllib.parse.quote_plus(AWS_SECRET_ACCESS_KEY)
+
+# celery worker
+QUEUE_NAME = 'celery-dev' if DEBUG else 'celery-prod'
+CELERY_BROKER_URL = f"sqs://{AWS_ACCESS_KEY_ID}:{encoded_secret}@"
+CELERY_RESULT_BACKEND = None  # If you're not using a result backend
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    'region': AWS_REGION_NAME,
+    'polling_interval': 5,
+    'visibility_timeout': 420,
+}
+
+# Explicitly define Celery queues
+CELERY_QUEUES = (
+    Queue(QUEUE_NAME, Exchange('default'), routing_key='default'),
+)
+
+CELERY_DEFAULT_QUEUE = QUEUE_NAME
+CELERY_DEFAULT_EXCHANGE = 'default'
+CELERY_DEFAULT_ROUTING_KEY = 'default'
+
+print(f"CELERY_BROKER_URL: {CELERY_BROKER_URL}")
+print(f"CELERY_BROKER_TRANSPORT_OPTIONS: {CELERY_BROKER_TRANSPORT_OPTIONS}")
 
 AUTH_USER_MODEL = 'users.CustomUser'
 

@@ -10,6 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
+from .tasks import process_video
 from .serializers import DeviceClaimSerializer, DeviceSerializer, MeasurementSerializer
 from .models import Device, Measurement
 
@@ -87,6 +88,7 @@ class MeasurementUploadView(APIView):
                 recorded_at=datetime.datetime.strptime(recorded_at, '%Y-%m-%dT%H:%M:%SZ'),
                 uploaded_at=datetime.datetime.now()
             )
+            process_video.delay(path)
             return Response({'status': 'success', 'path': path}, status=status.HTTP_201_CREATED)
         except Device.DoesNotExist:
             return Response({'error': 'Invalid device or secret'}, status=status.HTTP_400_BAD_REQUEST)
