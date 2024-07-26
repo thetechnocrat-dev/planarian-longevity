@@ -31,29 +31,38 @@ cover_width = 70 * 2 + led_bulb_height * 2; // See https://app.radicle.xyz/nodes
 
 // Toggle parts for printing
 print_bottom = true;
-print_cover = false;
-print_dish = false;
+print_cover = true;
+print_dish = true;
 
 module bottom() {
+    difference() {
+        translate([-bottom_overhang, -bottom_overhang, -wall_thickness]) {
+            cube([cover_width + 2 * bottom_overhang, cover_depth + 2 * bottom_overhang, wall_thickness + bottom_height]);
+        }
+        translate([-wall_thickness / 2, -wall_thickness / 2, 0]) {
+            cube([cover_width + wall_thickness, cover_depth + wall_thickness, bottom_height]);    
+        }
+        translate([(cover_width - (rpi_width + bottom_overhang)) / 2, -bottom_overhang, 0]) {
+            cube([rpi_width + bottom_overhang, wall_thickness, bottom_height]);
+        }
+    }
+    translate([cover_width / 2, cover_depth / 2, 0]) {
         difference() {
-            translate([-bottom_overhang, -bottom_overhang, -wall_thickness]) {
-                cube([cover_width + 2 * bottom_overhang, cover_depth + 2 * bottom_overhang, wall_thickness + bottom_height]);
+            cylinder(h = bottom_height / 2, d = dish_diameter + dish_thickness + bottom_overhang * 4, $fn=100);
+
+            cylinder(h = bottom_height / 2, d = dish_diameter + dish_thickness + bottom_overhang * 2, $fn=100);
+    
+            translate([-(cover_width / 2), -(cover_depth / 2), 0]) {
+                cube([cover_width, cover_depth / 4, bottom_height / 2]);
             }
-            translate([-wall_thickness / 2, -wall_thickness / 2, 0]) {
-                cube([cover_width + wall_thickness, cover_depth + wall_thickness, bottom_height]);    
-            }
-            translate([(cover_width - (rpi_width + bottom_overhang)) / 2, -bottom_overhang, 0]) {
-                cube([rpi_width + bottom_overhang, wall_thickness, bottom_height]);
-            }
-        }
-        translate([cover_width / 2, cover_depth / 2, 0]) {
-            difference() {
-                    cylinder(h = bottom_height, d = dish_diameter + dish_thickness + bottom_overhang * 4, $fn=100);
-                    cylinder(h = bottom_height, d = dish_diameter + dish_thickness + bottom_overhang * 2, $fn=100);
-                    cube(
+            
+            translate([-(cover_width / 2), -(cover_depth / 2) + cover_depth - (cover_depth / 4), 0]) {
+                cube([cover_width, cover_depth / 4, bottom_height / 2]);
             }
         }
+    }
 }
+
 
 module dish() {
     translate([cover_width / 2, cover_depth / 2, 0]) {
