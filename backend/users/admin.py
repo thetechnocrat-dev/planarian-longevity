@@ -9,7 +9,6 @@ class CustomUserAdmin(UserAdmin):
         (None, {'fields': ('email', 'password')}),
         ('Personal info', {'fields': ('username',)}),
         ('Permissions', {'fields': ('is_staff', 'is_superuser', 'groups', 'user_permissions')}),
-        ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
     search_fields = ('email', 'username')
     ordering = ('email',)
