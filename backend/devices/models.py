@@ -27,12 +27,22 @@ class Measurement(models.Model):
         ('camera', 'Camera'),
     )
 
+    INFERENCE_STATUS_CHOICES = (
+        ('not_selected', 'Not Selected'),
+        ('selected', 'Selected'),
+        ('processing', 'Processing'),
+        ('failed', 'Failed'),
+        ('succeeded', 'Succeeded'),
+    )
+
     device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='datapoints', db_index=True)
     sensor = models.CharField(max_length=10, choices=SENSOR_TYPES)
     value = models.TextField()
-    inference_value = models.TextField(blank=True, null=True)  # Add this line
+    inference_value = models.TextField(blank=True, null=True)
+    inference_status = models.CharField(max_length=20, choices=INFERENCE_STATUS_CHOICES, default='not_selected')
     recorded_at = models.DateTimeField(db_index=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    queued_at = models.DateTimeField(null=True, blank=True, db_index=True)
 
     def __str__(self):
         return f"{self.device.register_id} - {self.sensor} - {self.recorded_at}"

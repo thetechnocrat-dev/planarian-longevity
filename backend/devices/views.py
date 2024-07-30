@@ -110,52 +110,36 @@ class MeasurementListView(generics.ListAPIView):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_unprocessed_measurement(request):
-    print("Received request with headers:", request.headers)
-    print("Received request with GET params:", request.GET)
-
     worker_secret = request.GET.get('worker_secret')
-    recorded_after = request.GET.get('recorded_after')
-    
-    print("Worker secret:", worker_secret)
-    print("Recorded after:", recorded_after)
 
     if worker_secret != settings.WORKER_SECRET:
         return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    try:
-        recorded_after_date = timezone.make_aware(timezone.datetime.fromisoformat(recorded_after))
-    except ValueError:
-        return Response({'error': 'Invalid date format'}, status=status.HTTP_400_BAD_REQUEST)
-
-    measurement = Measurement.objects.filter(
-        recorded_at__gt=recorded_after_date
-    ).filter(
-        Q(inference_value__isnull=True) | Q(inference_value='')
-    ).order_by('-recorded_at').first()
+    # Get the oldest measurement with 'selected' inference_status
+    measurement = Measurement.objects.filter(inference_status='selected').order_by('queued_at').first()
     
     if not measurement:
         return Response({'message': 'No measurements found'}, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = MeasurementSerializer(measurement)
-
+    # Generate a presigned URL for the measurement's S3 value
     s3_client = boto3.client(
         's3',
         aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
         aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
         region_name=settings.AWS_S3_REGION_NAME
     )
-
-    data = serializer.data
-    filename = data['value']
     try:
         presigned_url = s3_client.generate_presigned_url(
             'get_object',
-            Params={'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': filename},
+            Params={'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': measurement.value},
             ExpiresIn=3600
         )
-        data['presigned_url'] = presigned_url
     except (NoCredentialsError, PartialCredentialsError) as e:
-        data['presigned_url'] = None
+        return Response({'error': str(e)}, status=403)
+
+    serializer = MeasurementSerializer(measurement)
+    data = serializer.data
+    data['presigned_url'] = presigned_url
 
     return Response(data)
 
@@ -165,6 +149,7 @@ def update_inference_value(request):
     worker_secret = request.data.get('worker_secret')
     measurement_id = request.data.get('id')
     inference_value = request.data.get('inference_value')
+    new_status = request.data.get('inference_status')
 
     if worker_secret != settings.WORKER_SECRET:
         return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -172,7 +157,31 @@ def update_inference_value(request):
     try:
         measurement = Measurement.objects.get(id=measurement_id)
         measurement.inference_value = inference_value
+        measurement.inference_status = new_status
         measurement.save()
         return Response({'message': 'Inference value updated successfully'}, status=status.HTTP_200_OK)
+    except Measurement.DoesNotExist:
+        return Response({'error': 'Measurement not found'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_inference_status(request):
+    measurement_id = request.data.get('id')
+    new_state = request.data.get('inference_status')
+    
+    if not measurement_id or not new_state:
+        return Response({'error': 'Invalid request'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        measurement = Measurement.objects.get(id=measurement_id)
+        if measurement.device.owner != request.user:
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        measurement.inference_status = new_state
+        if new_state == 'selected':
+            measurement.queued_at = timezone.now()
+        measurement.save()
+        
+        return Response({'message': 'Inference state updated successfully'})
     except Measurement.DoesNotExist:
         return Response({'error': 'Measurement not found'}, status=status.HTTP_404_NOT_FOUND)

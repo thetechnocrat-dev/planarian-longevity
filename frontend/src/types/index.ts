@@ -14,10 +14,13 @@ export interface Device {
 }
 
 export interface Measurement {
+    id: number;
     value: string;
     inference_value: string;
+    inference_status: string;
     recorded_at: string;
     uploaded_at: string;
+    queued_at: string;
 }
 
 export interface Message {

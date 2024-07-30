@@ -37,4 +37,4 @@ class DeviceSerializer(serializers.ModelSerializer):
 class MeasurementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Measurement
-        fields = ['id', 'value', 'recorded_at', 'uploaded_at', 'inference_value']
+        fields = ['id', 'value', 'recorded_at', 'uploaded_at', 'queued_at', 'inference_value', 'inference_status']

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { fetchDeviceDetails, fetchDeviceMeasurements } from '../api/deviceApi';
+import { fetchDeviceDetails, fetchDeviceMeasurements, updateInferenceStatus } from '../api/deviceApi';
 import { getPresignedUrl } from '../api/userApi';
 import { Device, Measurement } from '../types';
-import { isLoggedIn } from '../utils/auth';
+import { isLoggedIn, getUserInfo } from '../utils/auth';
 import { Typography, Button, Box, Table, TableBody, TableCell, TableHead, TableRow, TablePagination } from '@mui/material';
 
 const DeviceDetail: React.FC = () => {
@@ -13,6 +13,7 @@ const DeviceDetail: React.FC = () => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [totalMeasurements, setTotalMeasurements] = useState(0);
+    const userInfo = getUserInfo();
 
     useEffect(() => {
         if (isLoggedIn() && register_id) {
@@ -54,9 +55,20 @@ const DeviceDetail: React.FC = () => {
         }
     };
 
+    const handleAnalyze = async (id: number) => {
+        try {
+            await updateInferenceStatus(id, 'selected');
+            fetchMeasurements(register_id!, page + 1, rowsPerPage);
+        } catch (error) {
+            console.error('Error updating inference status:', error);
+        }
+    };
+
     const extractFilename = (path: string) => {
         return path.split('/').pop();
     };
+
+    const isDeviceOwner = device?.owner_username === userInfo?.username;
 
     return (
         <Box sx={{ p: 2 }}>
@@ -76,7 +88,8 @@ const DeviceDetail: React.FC = () => {
                                 <TableCell>Video</TableCell>
                                 <TableCell>Tracked Video</TableCell>
                                 <TableCell>Recorded At</TableCell>
-                                <TableCell>Uploaded At</TableCell>
+                                <TableCell>Inference Status</TableCell>
+                                <TableCell>Action</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -97,7 +110,15 @@ const DeviceDetail: React.FC = () => {
                                         )}
                                     </TableCell>
                                     <TableCell>{new Date(measurement.recorded_at).toLocaleString()}</TableCell>
-                                    <TableCell>{new Date(measurement.uploaded_at).toLocaleString()}</TableCell>
+                                    <TableCell>{measurement.inference_status}</TableCell>
+                                    <TableCell>
+                                        <Button
+                                            onClick={() => handleAnalyze(measurement.id)}
+                                            disabled={!isDeviceOwner || measurement.inference_status !== 'not_selected'}
+                                        >
+                                            Analyze
+                                        </Button>
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
