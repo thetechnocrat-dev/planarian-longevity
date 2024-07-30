@@ -1,4 +1,5 @@
 import os
+import platform
 import time
 import requests
 import boto3
@@ -76,7 +77,7 @@ while True:
 
             # Update inference state to 'processing'
             update_inference_value(measurement_id, None, 'processing')
-            
+
             try:
                 # Create local paths for input and output
                 local_input_path = f"/tmp/{os.path.basename(s3_path)}"
@@ -101,6 +102,17 @@ while True:
                 # Retrieve the actual saved path from YOLO results
                 saved_video_dir = results[0].save_dir
                 saved_video_path = os.path.join(saved_video_dir, os.path.basename(local_input_path))
+                print(f"YOLO output path: {saved_video_path}")
+
+                # Retrieve the actual saved path from YOLO results
+                saved_video_dir = results[0].save_dir
+                saved_video_name = os.path.basename(local_input_path)
+
+                # Change the extension to .avi if not Mac
+                if platform.system() != 'Darwin':
+                    saved_video_name = os.path.splitext(saved_video_name)[0] + '.avi'
+
+                saved_video_path = os.path.join(saved_video_dir, saved_video_name)
                 print(f"YOLO output path: {saved_video_path}")
 
                 # Convert the saved video to MP4 using ffmpeg
