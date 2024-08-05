@@ -5,13 +5,10 @@ from django.conf import settings
 from rest_framework.generics import CreateAPIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from django.contrib.auth import authenticate
-from rest_framework import serializers
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from .models import CustomUser
-from .serializers import UserSerializer
+from .serializers import UserSerializer, CustomTokenObtainPairSerializer
 from urllib.parse import unquote
 
 
@@ -28,27 +25,9 @@ class SignUpView(CreateAPIView):
             'email': user.email,
             'username': user.username
         }
-        response.data['token'] = str(refresh.access_token)
+        response.data['access'] = str(refresh.access_token)
+        response.data['refresh'] = str(refresh)
         return response
-
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    def validate(self, attrs):
-        authenticate_kwargs = {
-            'email': attrs.get('email'),
-            'password': attrs.get('password'),
-        }
-        user = authenticate(**authenticate_kwargs)
-        if user is None:
-            raise serializers.ValidationError('Invalid credentials')
-        refresh = self.get_token(user)
-        return {
-            'token': str(refresh.access_token),
-            'user': {
-                'id': user.id,
-                'email': user.email,
-                'username': user.username,
-            }
-        }
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer

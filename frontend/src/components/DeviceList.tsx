@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Grid, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Grid, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box, Typography, Tabs, Tab, useMediaQuery, useTheme } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { fetchDevices } from '../api/deviceApi';
 import { Device } from '../types';  
@@ -13,7 +13,10 @@ interface DevicesResponse {
 const DeviceList: React.FC = () => {
     const [yourDevices, setYourDevices] = useState<Device[]>([]);
     const [otherDevices, setOtherDevices] = useState<Device[]>([]);
+    const [tabIndex, setTabIndex] = useState(0);
     const navigate = useNavigate();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     useEffect(() => {
         fetchDevices()
@@ -29,11 +32,17 @@ const DeviceList: React.FC = () => {
         navigate(`/devices/${register_id}`);
     };
 
-    return (
+    const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+        setTabIndex(newValue);
+    };
+
+    const renderDeviceTables = () => (
         <Grid container spacing={3}>
-            <Grid item xs={6}>
+            <Grid item xs={12} md={6}>
                 <TableContainer component={Paper}>
-                    <h2>Your Devices</h2>
+                    <Box my={2} mx={2}>
+                        <Typography variant="h5">Your Devices</Typography>
+                    </Box>
                     <Table>
                         <TableHead>
                             <TableRow>
@@ -52,10 +61,14 @@ const DeviceList: React.FC = () => {
                             ))}
                         </TableBody>
                     </Table>
-                    <Button onClick={() => navigate('/claim')} style={{ margin: '20px' }}>Claim Device</Button>
+                    <Box m={2}>
+                        <Button onClick={() => navigate('/claim')} variant="contained">Claim Device</Button>
+                    </Box>
                 </TableContainer>
-                <TableContainer component={Paper} style={{ marginTop: '20px' }}>
-                    <h2>Other Devices</h2>
+                <TableContainer component={Paper} sx={{ mt: 3 }}>
+                    <Box my={2} mx={2}>
+                        <Typography variant="h5">Other Devices</Typography>
+                    </Box>
                     <Table>
                         <TableHead>
                             <TableRow>
@@ -76,10 +89,37 @@ const DeviceList: React.FC = () => {
                     </Table>
                 </TableContainer>
             </Grid>
-            <Grid item xs={6}>
-                <MessageList deviceType="flatworm_watcher" />
-            </Grid>
+            {!isMobile && (
+                <Grid item xs={12} md={6}>
+                    <MessageList deviceType="flatworm_watcher" />
+                </Grid>
+            )}
         </Grid>
+    );
+
+    const renderTabs = () => (
+        <Box>
+            <Tabs value={tabIndex} onChange={handleTabChange} centered>
+                <Tab label="Devices" />
+                <Tab label="Messages" />
+            </Tabs>
+            {tabIndex === 0 && (
+                <Box p={3}>
+                    {renderDeviceTables()}
+                </Box>
+            )}
+            {tabIndex === 1 && (
+                <Box p={3}>
+                    <MessageList deviceType="flatworm_watcher" />
+                </Box>
+            )}
+        </Box>
+    );
+
+    return (
+        <Box p={3}>
+            {isMobile ? renderTabs() : renderDeviceTables()}
+        </Box>
     );
 };
 

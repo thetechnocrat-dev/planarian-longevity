@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link as RouterLink } from 'react-router-dom';
 import { fetchDeviceDetails, fetchDeviceMeasurements, updateInferenceStatus } from '../api/deviceApi';
 import { getPresignedUrl } from '../api/userApi';
 import { Device, Measurement } from '../types';
 import { isLoggedIn, getUserInfo } from '../utils/auth';
-import { Typography, Button, Box, Table, TableBody, TableCell, TableHead, TableRow, TablePagination } from '@mui/material';
+import { Typography, Button, Box, Table, TableBody, TableCell, TableHead, TableRow, TablePagination, Select, MenuItem, SelectChangeEvent, FormControl, Breadcrumbs, Link } from '@mui/material';
 
 const DeviceDetail: React.FC = () => {
     const { register_id } = useParams<{ register_id: string }>();
     const [device, setDevice] = useState<Device | null>(null);
     const [measurements, setMeasurements] = useState<Measurement[]>([]);
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage] = useState(10); // Fixed rows per page to 10
     const [totalMeasurements, setTotalMeasurements] = useState(0);
+    const [filter, setFilter] = useState<string>(''); // State for the inference status filter
     const userInfo = getUserInfo();
 
     useEffect(() => {
@@ -21,12 +22,24 @@ const DeviceDetail: React.FC = () => {
                 .then(response => setDevice(response.data))
                 .catch(error => console.error('Error fetching device details:', error));
 
-            fetchMeasurements(register_id, 1, rowsPerPage);
+            setPage(0);
+            setMeasurements([]); // Clear measurements before fetching new data
+            fetchMeasurements(register_id, 1, filter);
         }
-    }, [register_id, rowsPerPage]);
+    }, [register_id, filter]);
 
-    const fetchMeasurements = (register_id: string, page: number, rowsPerPage: number) => {
-        fetchDeviceMeasurements(register_id, page)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (isLoggedIn() && register_id) {
+                fetchMeasurements(register_id, page + 1, filter);
+            }
+        }, 10000);
+
+        return () => clearInterval(interval); // Cleanup interval on component unmount
+    }, [register_id, page, filter]);
+
+    const fetchMeasurements = (register_id: string, page: number, filter: string) => {
+        fetchDeviceMeasurements(register_id, page, filter)
             .then(response => {
                 setMeasurements(response.data.results);
                 setTotalMeasurements(response.data.count);
@@ -36,13 +49,11 @@ const DeviceDetail: React.FC = () => {
 
     const handlePageChange = (event: unknown, newPage: number) => {
         setPage(newPage);
-        fetchMeasurements(register_id!, newPage + 1, rowsPerPage);
+        fetchMeasurements(register_id!, newPage + 1, filter);
     };
 
-    const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
-        fetchMeasurements(register_id!, 1, parseInt(event.target.value, 10));
+    const handleFilterChange = (event: SelectChangeEvent<string>) => {
+        setFilter(event.target.value as string);
     };
 
     const handleDownload = async (filepath: string) => {
@@ -58,7 +69,7 @@ const DeviceDetail: React.FC = () => {
     const handleAnalyze = async (id: number) => {
         try {
             await updateInferenceStatus(id, 'selected');
-            fetchMeasurements(register_id!, page + 1, rowsPerPage);
+            fetchMeasurements(register_id!, page + 1, filter);
         } catch (error) {
             console.error('Error updating inference status:', error);
         }
@@ -72,6 +83,12 @@ const DeviceDetail: React.FC = () => {
 
     return (
         <Box sx={{ p: 2 }}>
+            <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
+                <Link component={RouterLink} to="/devices" color="inherit">
+                    Devices
+                </Link>
+                <Typography color="textPrimary">{register_id}</Typography>
+            </Breadcrumbs>
             {device ? (
                 <>
                     <Typography variant="h5">Device Detail</Typography>
@@ -82,6 +99,19 @@ const DeviceDetail: React.FC = () => {
                     <Typography variant="body1">Registered: {device.registered ? 'Yes' : 'No'}</Typography>
 
                     <Typography variant="h6" sx={{ mt: 2 }}>Measurements</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <Typography variant="body1" sx={{ mr: 2 }}>Inference Status</Typography>
+                        <FormControl sx={{ minWidth: 200 }}>
+                            <Select value={filter} onChange={handleFilterChange} displayEmpty>
+                                <MenuItem value="">All</MenuItem>
+                                <MenuItem value="not_selected">Not Selected</MenuItem>
+                                <MenuItem value="selected">Selected</MenuItem>
+                                <MenuItem value="processing">Processing</MenuItem>
+                                <MenuItem value="failed">Failed</MenuItem>
+                                <MenuItem value="succeeded">Succeeded</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Box>
                     <Table>
                         <TableHead>
                             <TableRow>
@@ -129,7 +159,8 @@ const DeviceDetail: React.FC = () => {
                         page={page}
                         onPageChange={handlePageChange}
                         rowsPerPage={rowsPerPage}
-                        onRowsPerPageChange={handleRowsPerPageChange}
+                        rowsPerPageOptions={[]} // Disable rows per page selection
+                        onRowsPerPageChange={() => {}} // No-op to satisfy the prop requirement
                     />
                 </>
             ) : (

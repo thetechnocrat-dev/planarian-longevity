@@ -1,7 +1,10 @@
 export interface User {
+    id: string;
+    email: string;
     username: string;
     isLoggedIn: boolean;
-    token?: string;
+    access_token?: string;
+    refresh_token?: string;
 }
 
 export interface Device {
