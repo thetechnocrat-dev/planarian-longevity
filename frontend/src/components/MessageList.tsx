@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { List, ListItem, ListItemText, Paper, TextField, Button, Box } from '@mui/material';
+import { List, ListItem, ListItemText, Paper, TextField, Button, Box, Typography } from '@mui/material';
 import { fetchMessages, createMessage } from '../api/messageApi';
 import { Message } from '../types';
 
@@ -21,6 +21,18 @@ const MessageList: React.FC<MessageListProps> = ({ deviceType }) => {
         }
     }, [deviceType]);
 
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchMessages(deviceType)
+                .then(response => {
+                    setMessages(response.data);
+                })
+                .catch(error => console.error('Error fetching messages:', error));
+        }, 5000);
+
+        return () => clearInterval(interval); // Cleanup interval on component unmount
+    }, [deviceType]);
+
     const handleNewMessageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setNewMessage(event.target.value);
     };
@@ -30,20 +42,26 @@ const MessageList: React.FC<MessageListProps> = ({ deviceType }) => {
 
         createMessage(deviceType, newMessage)
             .then(response => {
-                setMessages([...messages, response.data]);
+                setMessages([response.data, ...messages]); // Add new message at the beginning
                 setNewMessage('');
             })
             .catch(error => console.error('Error creating message:', error));
     };
 
     return (
-        <Paper style={{ padding: '20px', height: '100%' }}>
-            <List style={{ maxHeight: '80%', overflow: 'auto' }}>
-                {messages.map((message, index) => (
+        <Paper sx={{ padding: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <List sx={{ maxHeight: '80%', overflow: 'auto', flexGrow: 1 }}>
+                {messages.slice().reverse().map((message, index) => (
                     <ListItem key={index}>
                         <ListItemText
-                            primary={`${message.username} - ${new Date(message.created_at).toLocaleString()}`}
-                            secondary={message.content}
+                            primary={message.content}
+                            secondary={
+                                <Box mt={1}>
+                                    <Typography variant="body2" color="textSecondary">
+                                        {message.username} - {new Date(message.created_at).toLocaleString()}
+                                    </Typography>
+                                </Box>
+                            }
                         />
                     </ListItem>
                 ))}
@@ -55,7 +73,7 @@ const MessageList: React.FC<MessageListProps> = ({ deviceType }) => {
                     onChange={handleNewMessageChange}
                     fullWidth
                 />
-                <Button onClick={handleSendMessage} variant="contained" color="primary" style={{ marginLeft: '10px' }}>
+                <Button onClick={handleSendMessage} variant="contained" color="primary" sx={{ ml: 2 }}>
                     Send
                 </Button>
             </Box>

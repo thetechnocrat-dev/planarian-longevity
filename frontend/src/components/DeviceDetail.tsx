@@ -11,7 +11,7 @@ const DeviceDetail: React.FC = () => {
     const [device, setDevice] = useState<Device | null>(null);
     const [measurements, setMeasurements] = useState<Measurement[]>([]);
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage] = useState(10); // Fixed rows per page to 10
     const [totalMeasurements, setTotalMeasurements] = useState(0);
     const userInfo = getUserInfo();
 
@@ -21,11 +21,14 @@ const DeviceDetail: React.FC = () => {
                 .then(response => setDevice(response.data))
                 .catch(error => console.error('Error fetching device details:', error));
 
-            fetchMeasurements(register_id, 1, rowsPerPage);
+            setPage(0);
+            setMeasurements([]); // Clear measurements before fetching new data
+            fetchMeasurements(register_id, 1);
         }
-    }, [register_id, rowsPerPage]);
+    }, [register_id]);
 
-    const fetchMeasurements = (register_id: string, page: number, rowsPerPage: number) => {
+    const fetchMeasurements = (register_id: string, page: number) => {
+        setMeasurements([]); // Clear measurements before fetching new data
         fetchDeviceMeasurements(register_id, page)
             .then(response => {
                 setMeasurements(response.data.results);
@@ -36,13 +39,7 @@ const DeviceDetail: React.FC = () => {
 
     const handlePageChange = (event: unknown, newPage: number) => {
         setPage(newPage);
-        fetchMeasurements(register_id!, newPage + 1, rowsPerPage);
-    };
-
-    const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
-        fetchMeasurements(register_id!, 1, parseInt(event.target.value, 10));
+        fetchMeasurements(register_id!, newPage + 1);
     };
 
     const handleDownload = async (filepath: string) => {
@@ -58,7 +55,7 @@ const DeviceDetail: React.FC = () => {
     const handleAnalyze = async (id: number) => {
         try {
             await updateInferenceStatus(id, 'selected');
-            fetchMeasurements(register_id!, page + 1, rowsPerPage);
+            fetchMeasurements(register_id!, page + 1);
         } catch (error) {
             console.error('Error updating inference status:', error);
         }
@@ -129,7 +126,8 @@ const DeviceDetail: React.FC = () => {
                         page={page}
                         onPageChange={handlePageChange}
                         rowsPerPage={rowsPerPage}
-                        onRowsPerPageChange={handleRowsPerPageChange}
+                        rowsPerPageOptions={[]} // Disable rows per page selection
+                        onRowsPerPageChange={() => {}} // No-op to satisfy the prop requirement
                     />
                 </>
             ) : (
