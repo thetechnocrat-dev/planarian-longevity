@@ -11,31 +11,38 @@ import { User } from './types';
 
 const App: React.FC = () => {
     const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-      console.log(`App component isLoggedIn ${isLoggedIn()}`)
-      if (isLoggedIn()) {
-          const userInfo = getUserInfo();
-          console.log(`App component user ${userInfo}`)
-          setUser(userInfo);
-      }
+        if (isLoggedIn()) {
+            const userInfo = getUserInfo();
+            console.log('User is logged in:', userInfo);
+            setUser(userInfo);
+        } else {
+            console.log('User is not logged in');
+        }
+        setLoading(false);
     }, []);
 
     const handleLogout = () => {
         setUser(logout());
     };
 
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
     return (
         <Router>
             <div>
                 <Navbar user={user} onLogout={handleLogout} />
                 <Routes>
-                    <Route path="/" element={<Navigate replace to={user ? "/devices" : "/signup"} />} />
+                    <Route path="/" element={user ? <DeviceList /> : <Navigate replace to="/login" />} />
                     <Route path="/signup" element={<SignupForm onLogin={(newUser) => setUser(newUser)} />} />
                     <Route path="/login" element={<LoginForm onLogin={(newUser) => setUser(newUser)} />} />
-                    <Route path="/claim" element={<DeviceClaimForm />} />
-                    <Route path="/devices" element={<DeviceList />} />
-                    <Route path="/devices/:register_id" element={<DeviceDetail />} />
+                    <Route path="/claim" element={user ? <DeviceClaimForm /> : <Navigate replace to="/login" />} />
+                    <Route path="/devices" element={user ? <DeviceList /> : <Navigate replace to="/login" />} />
+                    <Route path="/devices/:register_id" element={user ? <DeviceDetail /> : <Navigate replace to="/login" />} />
                 </Routes>
             </div>
         </Router>

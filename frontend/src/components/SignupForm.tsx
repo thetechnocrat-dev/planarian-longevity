@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, TextField, Typography } from '@mui/material';
-import { saveUserInfo } from '../utils/auth';
 import { User } from '../types';
-import api from '../api/axiosConfig';
+import { signup } from '../api/userApi';
 
 interface SignupFormProps {
   onLogin: (user: User) => void;
@@ -21,14 +20,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ onLogin }) => {
     setError('');
 
     try {
-      const response = await api.post('/users/signup/', {
-        username,
-        email,
-        password,
-      });
-
-      saveUserInfo(response.data.token, response.data.user);
-      onLogin(response.data.user);
+      const user = await signup({ username, email, password });
+      onLogin(user);
       navigate('/claim');
     } catch (error) {
       console.error('Error signing up:', error);

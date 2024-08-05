@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -21,7 +21,12 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
   return (
     <AppBar position="sticky">
       <Toolbar>
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+        <Typography
+          component={Link}
+          to="/"
+          variant="h6"
+          sx={{ flexGrow: 1, textDecoration: 'none', color: 'inherit' }}
+        >
           Openzyme
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>

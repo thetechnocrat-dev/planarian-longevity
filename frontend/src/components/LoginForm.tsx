@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, TextField, Typography } from '@mui/material';
-import { saveUserInfo } from '../utils/auth';
 import { User } from '../types';
-import api from '../api/axiosConfig';
+import { login } from '../api/userApi';
 
 interface LoginFormProps {
   onLogin: (user: User) => void;
@@ -20,13 +19,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
     setError('');
 
     try {
-      const response = await api.post('/users/login/', {
-        email,
-        password,
-      });
-
-      saveUserInfo(response.data.token, response.data.user);
-      onLogin(response.data.user);
+      const user = await login({ email, password });
+      onLogin(user);
       navigate('/');
     } catch (error) {
       console.error('Error logging in:', error);
