@@ -1,11 +1,10 @@
 import datetime
 import boto3
 from django.utils import timezone
-from django.shortcuts import get_object_or_404
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.conf import settings
-from django.db.models import Q
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, generics, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
@@ -13,6 +12,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
+from rest_framework import filters
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 from .serializers import DeviceClaimSerializer, DeviceSerializer, MeasurementSerializer
 from .models import Device, Measurement
@@ -102,10 +102,17 @@ class MeasurementListView(generics.ListAPIView):
     serializer_class = MeasurementSerializer
     pagination_class = MeasurementPagination
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['inference_status']
+    ordering_fields = ['recorded_at']
 
     def get_queryset(self):
         register_id = self.kwargs['register_id']
-        return Measurement.objects.filter(device__register_id=register_id).order_by('-recorded_at')
+        queryset = Measurement.objects.filter(device__register_id=register_id).order_by('-recorded_at')
+        inference_status = self.request.query_params.get('inference_status')
+        if inference_status:
+            queryset = queryset.filter(inference_status=inference_status)
+        return queryset
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
