@@ -127,10 +127,6 @@ while True:
                 conversion_end_time = timeit.default_timer()
                 print(f"Video conversion time: {conversion_end_time - conversion_start_time:.2f} seconds")
 
-                os.system(f"ffmpeg -i {saved_video_path} -vcodec libx264 {local_output_mp4_path}")
-                conversion_end_time = timeit.default_timer()
-                print(f"Video conversion time: {conversion_end_time - conversion_start_time:.2f} seconds")
-
                 # Upload the processed video back to S3
                 s3_key = f"{os.path.splitext(s3_path)[0]}_tracked.mp4"
                 upload_start_time = timeit.default_timer()
