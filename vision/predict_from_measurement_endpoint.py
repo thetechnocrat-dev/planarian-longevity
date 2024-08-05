@@ -3,6 +3,7 @@ import platform
 import time
 import requests
 import boto3
+import subprocess
 from ultralytics import YOLO
 import torch
 import timeit
@@ -29,7 +30,6 @@ model = YOLO('./models/best_v1.pt').to(device)
 model_load_end_time = timeit.default_timer()
 print(f"Model loading time: {model_load_end_time - model_load_start_time:.2f} seconds")
 
-# S3 client
 s3_client = boto3.client(
     's3',
     aws_access_key_id=AWS_ACCESS_KEY_ID,
@@ -48,7 +48,12 @@ def download_file_from_s3(presigned_url, local_path):
 
 def upload_file_to_s3(local_path, s3_key):
     try:
-        s3_client.upload_file(local_path, AWS_STORAGE_BUCKET_NAME, s3_key)
+        s3_client.upload_file(
+            local_path,
+            AWS_STORAGE_BUCKET_NAME,
+            s3_key,
+            ExtraArgs={'ContentType': 'video/mp4'}
+        )
     except (NoCredentialsError, PartialCredentialsError) as e:
         raise Exception(f"S3 upload failed: {str(e)}")
 
@@ -117,6 +122,11 @@ while True:
 
                 # Convert the saved video to MP4 using ffmpeg
                 conversion_start_time = timeit.default_timer()
+                command = f"ffmpeg -y -i {saved_video_path} -vcodec libx264 -movflags +faststart -color_range pc -chroma_sample_location center {local_output_mp4_path}"
+                subprocess.run(command, shell=True, check=True)
+                conversion_end_time = timeit.default_timer()
+                print(f"Video conversion time: {conversion_end_time - conversion_start_time:.2f} seconds")
+
                 os.system(f"ffmpeg -i {saved_video_path} -vcodec libx264 {local_output_mp4_path}")
                 conversion_end_time = timeit.default_timer()
                 print(f"Video conversion time: {conversion_end_time - conversion_start_time:.2f} seconds")
