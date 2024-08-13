@@ -15,7 +15,7 @@ class Device(models.Model):
     device_version = models.CharField(max_length=20, choices=DEVICE_VERSIONS)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
     registered = models.BooleanField(default=False)
-    mac_address = models.CharField(max_length=17, unique=True, null=True, blank=True)  # New field added
+    mac_address = models.CharField(max_length=17, unique=True, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     last_heartbeat = models.DateTimeField(null=True, blank=True)
