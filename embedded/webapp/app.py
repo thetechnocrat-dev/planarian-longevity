@@ -14,12 +14,12 @@ def index():
     return render_template('index.html')
 
 def get_next_filename(base_path, base_name):
-    index = 1
+    index = 100 # save room for default networks
     while True:
         new_name = f"{base_name}_{index}.nmconnection"
         full_path = os.path.join(base_path, new_name)
         if not os.path.exists(full_path):
-            return full_path, index + 1
+            return full_path, index
         index += 1
 
 def configure_network(ssid, password):
