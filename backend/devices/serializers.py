@@ -21,7 +21,7 @@ class DeviceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Device
-        fields = ['uuid', 'register_id', 'device_type', 'device_version', 'owner', 'owner_username', 'registered', 'created_at', 'updated_at']
+        fields = ['uuid', 'register_id', 'device_type', 'device_version', 'owner', 'owner_username', 'mac_address', 'registered', 'created_at', 'updated_at']
         read_only_fields = ['uuid', 'created_at', 'updated_at', 'owner_username']
 
     def create(self, validated_data):

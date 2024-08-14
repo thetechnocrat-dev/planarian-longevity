@@ -6,7 +6,7 @@ From OS bookworm
 
 ```
 sudo apt-get update
-sudo apt-get -y install git python3-flask
+sudo apt-get -y install git python3-flask ffmpeg
 vi /home/openzyme/.env
 sudo vi /etc/NetworkManager/system-connections/accesspoint.nmconnection
 sudo chmod 600 /etc/NetworkManager/system-connections/accesspoint.nmconnection

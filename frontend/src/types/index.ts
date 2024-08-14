@@ -14,6 +14,7 @@ export interface Device {
     device_version: string;
     owner_username: string;
     registered: boolean;
+    mac_address: string;
 }
 
 export interface Measurement {
