@@ -6,6 +6,7 @@ import LoginForm from './components/LoginForm';
 import DeviceClaimForm from './components/DeviceClaimForm';
 import DeviceList from './components/DeviceList';
 import DeviceDetail from './components/DeviceDetail';
+import DeviceWiFiInstructions from './components/DeviceWiFiInstructions';
 import { isLoggedIn, getUserInfo, logout } from './utils/auth';
 import { User } from './types';
 import { Box } from '@mui/material';
@@ -45,6 +46,7 @@ const App: React.FC = () => {
                         <Route path="/claim" element={user ? <DeviceClaimForm /> : <Navigate replace to="/login" />} />
                         <Route path="/devices" element={user ? <DeviceList /> : <Navigate replace to="/login" />} />
                         <Route path="/devices/:register_id" element={user ? <DeviceDetail /> : <Navigate replace to="/login" />} />
+                        <Route path="/claim/device/:register_id" element={<DeviceWiFiInstructions />} />
                     </Routes>
                 </Box>
                 <Box component="footer" p={2} textAlign="center">

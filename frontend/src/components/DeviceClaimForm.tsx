@@ -19,7 +19,7 @@ const DeviceClaimForm: React.FC = () => {
       await api.post('/devices/claim/', { register_id: registerId });
       setSuccess('Device claimed successfully!');
       setRegisterId('');
-      navigate('/devices');
+      navigate(`/claim/device/${registerId}`); // Navigate to the device detail page with the user-entered ID
     } catch (error: unknown) {  // Type annotation for error
       if (error instanceof AxiosError) {  // Type guard for Axios errors
         console.error('Error claiming device:', error.response?.data.error);
