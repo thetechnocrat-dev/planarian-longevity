@@ -100,17 +100,16 @@ while True:
                 # Perform inference on the video
                 start_time = timeit.default_timer()
                 inference_start_time = timeit.default_timer()
-                results = model.track(source=local_input_path, save=True)
+                
+                # Stream results frame by frame
+                for result in model.track(source=local_input_path, save=True, stream=True):
+                    saved_video_dir = result.save_dir
+                
+                # Inference complete
                 inference_end_time = timeit.default_timer()
                 print(f"Inference time: {inference_end_time - inference_start_time:.2f} seconds")
-
+                
                 # Retrieve the actual saved path from YOLO results
-                saved_video_dir = results[0].save_dir
-                saved_video_path = os.path.join(saved_video_dir, os.path.basename(local_input_path))
-                print(f"YOLO output path: {saved_video_path}")
-
-                # Retrieve the actual saved path from YOLO results
-                saved_video_dir = results[0].save_dir
                 saved_video_name = os.path.basename(local_input_path)
 
                 # Change the extension to .avi if not Mac
